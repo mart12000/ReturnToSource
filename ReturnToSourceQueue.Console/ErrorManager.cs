@@ -44,8 +44,13 @@ namespace ReturnToSourceQueue.Controller
 
         public void ReturnAll()
         {
-            foreach (var m in queue.GetAllMessages())
+            for (int i = 0; i < 100000; i++)
+            {
+                Message m = queue.Receive();
                 ReturnMessageToSourceQueue(m.Id);
+            }
+            //foreach (var m in queue.GetAllMessages())
+            //    ReturnMessageToSourceQueue(m.Id);
         }
 
         //public void ReturnMessageToSource(string id)
@@ -98,41 +103,42 @@ namespace ReturnToSourceQueue.Controller
                 }
                 catch (MessageQueueException ex)
                 {
-                    if (ex.MessageQueueErrorCode == MessageQueueErrorCode.IOTimeout)
-                    {
-                        Console.WriteLine(NoMessageFoundErrorFormat, messageId);
+                    Console.WriteLine("cannot send error: " + ex.Message);
+                    //if (ex.MessageQueueErrorCode == MessageQueueErrorCode.IOTimeout)
+                    //{
+                    //    Console.WriteLine(NoMessageFoundErrorFormat, messageId);
 
-                        foreach (var m in queue.GetAllMessages())
-                        {
-                            var tm = MsmqUtilities.Convert(m);
+                    //    foreach (var m in queue.GetAllMessages())
+                    //    {
+                    //        var tm = MsmqUtilities.Convert(m);
 
-                            if (tm.Headers.ContainsKey(TransportHeaderKeys.OriginalId))
-                            {
-                                if (messageId != tm.Headers[TransportHeaderKeys.OriginalId])
-                                    continue;
+                    //        if (tm.Headers.ContainsKey(TransportHeaderKeys.OriginalId))
+                    //        {
+                    //            if (messageId != tm.Headers[TransportHeaderKeys.OriginalId])
+                    //                continue;
 
-                                Console.WriteLine("Found message - going to return to queue.");
+                    //            Console.WriteLine("Found message - going to return to queue.");
 
-                                using (var tx = new TransactionScope())
-                                {
-                                    using (var q = new MessageQueue(
-                                                MsmqUtilities.GetFullPath(
-                                                    Address.Parse(tm.Headers[NServiceBus.Faults.FaultsHeaderKeys.FailedQ]))))
-                                        q.Send(m, MessageQueueTransactionType.Automatic);
+                    //            using (var tx = new TransactionScope())
+                    //            {
+                    //                using (var q = new MessageQueue(
+                    //                            MsmqUtilities.GetFullPath(
+                    //                                Address.Parse(tm.Headers[NServiceBus.Faults.FaultsHeaderKeys.FailedQ]))))
+                    //                    q.Send(m, MessageQueueTransactionType.Automatic);
 
-                                    queue.ReceiveByLookupId(MessageLookupAction.Current, m.LookupId,
-                                                            MessageQueueTransactionType.Automatic);
+                    //                queue.ReceiveByLookupId(MessageLookupAction.Current, m.LookupId,
+                    //                                        MessageQueueTransactionType.Automatic);
 
-                                    tx.Complete();
-                                }
+                    //                tx.Complete();
+                    //            }
 
-                                Console.WriteLine("Success.");
-                                scope.Complete();
+                    //            Console.WriteLine("Success.");
+                    //            scope.Complete();
 
-                                return;
-                            }
-                        }
-                    }
+                    //            return;
+                    //        }
+                    //    }
+                    //}
                 }
             }
         }
