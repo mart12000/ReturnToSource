@@ -44,10 +44,9 @@ namespace ReturnToSourceQueue.Controller
 
         public void ReturnAll()
         {
-            for (int i = 0; i < 100000; i++)
+            for (int i = 0; i < 3000000; i++)
             {
-                Message m = queue.Receive();
-                ReturnMessageToSourceQueue(m.Id);
+                ReturnMessageToSourceQueue();
             }
             //foreach (var m in queue.GetAllMessages())
             //    ReturnMessageToSourceQueue(m.Id);
@@ -70,13 +69,13 @@ namespace ReturnToSourceQueue.Controller
         /// May throw a timeout exception if a message with the given id cannot be found.
         /// </summary>
         /// <param name="messageId"></param>
-        public void ReturnMessageToSourceQueue(string messageId)
+        public void ReturnMessageToSourceQueue()
         {
             using (var scope = new TransactionScope())
             {
                 try
                 {
-                    var message = queue.ReceiveById(messageId, TimeoutDuration, MessageQueueTransactionType.Automatic);
+                    var message = queue.Receive(MessageQueueTransactionType.Automatic);
 
                     var tm = MsmqUtilities.Convert(message);
                     string failedQ;

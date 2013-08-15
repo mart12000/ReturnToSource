@@ -64,7 +64,7 @@ namespace ReturnToSourceQueue.Controller
                 if (messageId == "all")
                     errorManager.ReturnAll();
                 else
-                    errorManager.ReturnMessageToSourceQueue(messageId);
+                    errorManager.ReturnMessageToSourceQueue();
 
                 if (args == null || args.Length == 0)
                 {
